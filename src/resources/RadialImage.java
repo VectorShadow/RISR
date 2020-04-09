@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import static resources.RMath.*;
+
 /**
  * Define an Image by concentric rings of pixels radiating out from a well-defined center.
  */
@@ -35,13 +37,12 @@ public class RadialImage {
         COLS = SOURCE.getWidth();
         //count the occurrence of each individual color - used to infer background
         HashMap<Integer, Integer> colorCounter = new HashMap<>();
-        //find the index of the center pixel, either (n, n) for odd SIZE or (n.5, n.5) for even SIZE
         int distance;
         int rgb;
         for (int i = 0; i < SOURCE.getHeight(); ++i) {
             for (int j = 0; j < SOURCE.getWidth(); ++j) {
                 GridCoordinate gc = new GridCoordinate(i, j);
-                PolarCoordinate pc = RMath.convert(RMath.center(ROWS), RMath.center(COLS), gc);
+                PolarCoordinate pc = convert(center(ROWS), center(COLS), gc);
                 distance = (int)pc.DISTANCE;
                 //ensure we have enough concentric pixel rings to track this pixel
                 while (PIXEL_RINGS.size() <= distance)
@@ -70,7 +71,7 @@ public class RadialImage {
             BACKGROUND_RGB = mostCommonColor;
         } else
             BACKGROUND_RGB = backgroundColorRGB;
-        //todo - deal with outer unconnected rings?
+        //todo - improved handling of incomplete outer rings
         for (ArrayList<RadialPixel> ring : PIXEL_RINGS) {
             ring.sort(
                     (RadialPixel rp1, RadialPixel rp2) -> (int)(SORT_SCALE * (rp1.PC.ANGLE - rp2.PC.ANGLE))
@@ -89,15 +90,15 @@ public class RadialImage {
     public RadialImage rotate(double percentOfCircle) {
         final ArrayList<ArrayList<RadialPixel>> ROTATED_RINGS = new ArrayList<>();
         //normalize the rotation percentage
-        double nRotate = RMath.normalize(percentOfCircle);
+        double nRotate = normalize(percentOfCircle);
         int rOffset;
         for (ArrayList<RadialPixel> ring : PIXEL_RINGS) {
             //calculate the resulting offset for each ring
-            rOffset = (int)(nRotate * (double)(ring.size()));
+            rOffset = map(ring.size(), nRotate);
             if (rOffset == 0)
                 ROTATED_RINGS.add(ring);
             else {
-                //apply the resulting offset to construct a new ring.
+                //apply the resulting offset to construct a rotated ring.
                 ArrayList<RadialPixel> rRing = new ArrayList<>();
                 for (int i = rOffset; i < ring.size(); ++i)
                     rRing.add(new RadialPixel(ring.get(i - rOffset).PC, ring.get(i).RGB));
@@ -114,32 +115,32 @@ public class RadialImage {
      */
     public RadialImage scale(double scaleFactor) {
         //set the new dimensions
-        final int R = RMath.map(ROWS, scaleFactor);
-        final int C = RMath.map(COLS, scaleFactor);
+        final int R = map(ROWS, scaleFactor);
+        final int C = map(COLS, scaleFactor);
         //generate a radial image with rings corresponding to our desired outputs
         BufferedImage scaledImage = new BufferedImage(C, R, BufferedImage.TYPE_INT_RGB);
         RadialImage radialImage = new RadialImage(scaledImage);
-        final ArrayList<ArrayList<RadialPixel>> SCALED_RINGS = new ArrayList<>();
         ArrayList<RadialPixel> ring;
         RadialPixel radialPixel;
-        //establish the scale between the numbers of rings in each image
-        double ringScale = RMath.getScale(PIXEL_RINGS.size(), radialImage.PIXEL_RINGS.size());
-        double pixelScale;
         int sourceRingSize;
         int targetRingSize;
+        double pixelScale;
+        //establish the scale between the numbers of rings in each image
+        double ringScale = getScale(PIXEL_RINGS.size(), radialImage.PIXEL_RINGS.size());
+        final ArrayList<ArrayList<RadialPixel>> SCALED_RINGS = new ArrayList<>();
         //iterate through all rings in the source image
         for (int i = 0; i < PIXEL_RINGS.size(); ++i) {
             //ignore or repeat rings as called for by the scale
-            while (SCALED_RINGS.size() < RMath.map(i + 1, ringScale)) {
+            while (SCALED_RINGS.size() < map(i + 1, ringScale)) {
                 ring = new ArrayList<>();
                 sourceRingSize = PIXEL_RINGS.get(i).size();
                 targetRingSize = radialImage.PIXEL_RINGS.get(SCALED_RINGS.size()).size();
                 //establish the scale between the numbers of pixels in this ring for each image
-                pixelScale = RMath.getScale(sourceRingSize, targetRingSize);
+                pixelScale = getScale(sourceRingSize, targetRingSize);
                 //iterate through all pixels in the source ring
                 for (int j = 0; j < PIXEL_RINGS.get(i).size(); ++j) {
                     //ignore or repeat pixels as called for by the scale
-                    while (ring.size() < RMath.map(j + 1, pixelScale)) {
+                    while (ring.size() < map(j + 1, pixelScale)) {
                         //grab the target pixel from the dummy image to get an accurate angle and distance
                         radialPixel = radialImage.PIXEL_RINGS.get(SCALED_RINGS.size()).get(ring.size());
                         ring.add(
@@ -163,14 +164,14 @@ public class RadialImage {
      */
     private BufferedImage generateBufferedImage(int imageRows, int imageColumns, ArrayList<ArrayList<RadialPixel>> rings) {
         BufferedImage bufferedImage = new BufferedImage(imageColumns, imageRows, BufferedImage.TYPE_INT_RGB);
-        for (int i = 0; i < bufferedImage.getHeight(); ++i) {
-            for (int j = 0; j < bufferedImage.getWidth(); ++j) {
-                bufferedImage.setRGB(j, i, BACKGROUND_RGB);
-            }
-        }
+//        for (int i = 0; i < bufferedImage.getHeight(); ++i) {
+//            for (int j = 0; j < bufferedImage.getWidth(); ++j) {
+//                bufferedImage.setRGB(j, i, BACKGROUND_RGB);
+//            }
+//        }
         for (ArrayList<RadialPixel> ring : rings) {
             for (RadialPixel radialPixel : ring) {
-                GridCoordinate gc = RMath.convert(RMath.center(imageRows), RMath.center(imageColumns), radialPixel.PC);
+                GridCoordinate gc = convert(center(imageRows), center(imageColumns), radialPixel.PC);
                 bufferedImage.setRGB(gc.COL, gc.ROW, radialPixel.RGB);
             }
         }
