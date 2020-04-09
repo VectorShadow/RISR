@@ -1,3 +1,5 @@
+package resources;
+
 public class GridCoordinate {
     public final int ROW;
     public final int COL;

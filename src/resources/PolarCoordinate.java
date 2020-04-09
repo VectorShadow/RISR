@@ -1,3 +1,5 @@
+package resources;
+
 public class PolarCoordinate {
     public final double ANGLE;
     public final double DISTANCE;

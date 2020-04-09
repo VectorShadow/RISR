@@ -1,5 +1,9 @@
+package dev;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
+
+import static resources.RMath.*;
 
 public class TestImageGenerator {
 
@@ -12,7 +16,7 @@ public class TestImageGenerator {
         double centerCol = ((double)columns - 1.0) / 2.0;
         for (int i = 0; i < rows; ++i) {
             for (int j = 0; j < columns; ++j) {
-                bi.setRGB(j, i, primeRings((int)RMath.distance(centerRow, centerCol, i, j)).getRGB());
+                bi.setRGB(j, i, primeRings((int) distance(centerRow, centerCol, i, j)).getRGB());
             }
         }
         return bi;
