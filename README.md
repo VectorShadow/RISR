@@ -27,8 +27,6 @@ Derive a BufferedImage from this RadialImage:
 
 public BufferedImage toBufferedImage()
 
-[Unimplemented:]
-
 Derive a RadialImage by applying a scale factor to an existing RadialImage
 (@param scaleFactor the ratio between the size of the new image and the size of the old image.
     
