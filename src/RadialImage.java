@@ -7,10 +7,12 @@ import java.util.Map;
  * Define an Image by concentric rings of pixels radiating out from a well-defined center.
  */
 public class RadialImage {
-    private final double CENTER_INDEX;
     private ArrayList<ArrayList<RadialPixel>> pixelRings;
     private final int BACKGROUND_RGB;
-    private final int SIZE;
+    private final int HEIGHT;
+    private final int WIDTH;
+    private final double VERTICAL_CENTER;
+    private final double HORIZONTAL_CENTER;
 
     /**
      * Derive a RadialImage from a BufferedImage and infer the background color.
@@ -23,22 +25,20 @@ public class RadialImage {
      * Derive a RadialImage from a BufferedImage and supply the background color.
      */
     public RadialImage(BufferedImage bufferedImage, int backgroundColorRGB) {
-        //ensure our source image is a perfect square so our rings are perfect circles:
-        if (bufferedImage.getWidth() != bufferedImage.getHeight()) {
-            bufferedImage = toSquare(bufferedImage);
-        }
         pixelRings = new ArrayList<>();
-        SIZE = bufferedImage.getHeight();
+        HEIGHT = bufferedImage.getHeight();
+        WIDTH = bufferedImage.getWidth();
         //count the occurrence of each individual color - used to infer background
         HashMap<Integer, Integer> colorCounter = new HashMap<>();
         //find the index of the center pixel, either (n, n) for odd SIZE or (n.5, n.5) for even SIZE
-        CENTER_INDEX = ((double)(SIZE - 1)) / 2.0;
+        VERTICAL_CENTER = ((double)(HEIGHT - 1) / 2.0);
+        HORIZONTAL_CENTER = ((double)(WIDTH - 1) / 2.0);
         int distance;
         int rgb;
         for (int i = 0; i < bufferedImage.getHeight(); ++i) {
             for (int j = 0; j < bufferedImage.getWidth(); ++j) {
                 GridCoordinate gc = new GridCoordinate(i, j);
-                PolarCoordinate pc = RMath.convert(CENTER_INDEX, gc);
+                PolarCoordinate pc = RMath.convert(VERTICAL_CENTER, HORIZONTAL_CENTER, gc);
                 distance = (int)pc.DISTANCE;
                 //ensure we have enough concentric pixel rings to track this pixel
                 while (pixelRings.size() <= distance)
@@ -80,8 +80,10 @@ public class RadialImage {
     private RadialImage(RadialImage radialImage) {
         pixelRings = new ArrayList<>();
         BACKGROUND_RGB = radialImage.BACKGROUND_RGB;
-        SIZE = radialImage.SIZE;
-        CENTER_INDEX = radialImage.CENTER_INDEX;
+        HEIGHT = radialImage.HEIGHT;
+        WIDTH = radialImage.WIDTH;
+        VERTICAL_CENTER = radialImage.VERTICAL_CENTER;
+        HORIZONTAL_CENTER = radialImage.HORIZONTAL_CENTER;
     }
 
     /**
@@ -119,7 +121,7 @@ public class RadialImage {
      * Derive a BufferedImage from this RadialImage.
      */
     public BufferedImage toBufferedImage() {
-        BufferedImage bufferedImage = new BufferedImage(SIZE, SIZE, BufferedImage.TYPE_INT_RGB);
+        BufferedImage bufferedImage = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB);
         for (int i = 0; i < bufferedImage.getHeight(); ++i) {
             for (int j = 0; j < bufferedImage.getWidth(); ++j) {
                 bufferedImage.setRGB(j, i, BACKGROUND_RGB);
@@ -127,14 +129,15 @@ public class RadialImage {
         }
         for (ArrayList<RadialPixel> ring : pixelRings) {
             for (RadialPixel radialPixel : ring) {
-                GridCoordinate gc = RMath.convert(CENTER_INDEX, radialPixel.PC);
-                bufferedImage.setRGB(gc.COL, gc.ROW, radialPixel.RGB);
+                GridCoordinate gc = RMath.convert(VERTICAL_CENTER, HORIZONTAL_CENTER, radialPixel.PC);
+                if (inBounds(gc))
+                    bufferedImage.setRGB(gc.COL, gc.ROW, radialPixel.RGB);
             }
         }
         return bufferedImage;
     }
 
-    private BufferedImage toSquare(BufferedImage bufferedImage) {
-        throw new UnsupportedOperationException(); //todo
+    private boolean inBounds(GridCoordinate gc) {
+        return gc.ROW >= 0 && gc.COL >= 0 && gc.ROW < HEIGHT && gc.COL < WIDTH;
     }
 }

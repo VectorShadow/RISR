@@ -14,11 +14,15 @@ public class TestImageGenerator {
     };
 
     public static BufferedImage build(int size) {
-        BufferedImage bi = new BufferedImage(size, size, BufferedImage.TYPE_INT_RGB);
-        double center = ((double)size - 1.0) / 2.0;
-        for (int i = 0; i < size; ++i) {
-            for (int j = 0; j < size; ++j) {
-                bi.setRGB(j, i, RING_COLORS[(int)RMath.distance(center, i, j) % RING_COLORS.length]);
+        return build(size, size);
+    }
+    public static BufferedImage build(int rows, int columns) {
+        BufferedImage bi = new BufferedImage(columns, rows, BufferedImage.TYPE_INT_RGB);
+        double centerRow = ((double)rows - 1.0) / 2.0;
+        double centerCol = ((double)columns - 1.0) / 2.0;
+        for (int i = 0; i < rows; ++i) {
+            for (int j = 0; j < columns; ++j) {
+                bi.setRGB(j, i, RING_COLORS[(int)RMath.distance(centerRow, centerCol, i, j) % RING_COLORS.length]);
             }
         }
         return bi;

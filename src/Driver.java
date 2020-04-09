@@ -14,7 +14,7 @@ public class Driver {
     public static void main(String[] args) throws IOException {
         final String PNG = "PNG";
         ImageIO.write(TestImageGenerator.build(101), PNG, new File("./images/test3.png"));
-        File sourceImage = new File("./images/test4.png");
+        File sourceImage = new File("./images/test6.png");
         File simpleOutput = new File("./images/out0.png");
         File rotate33Output = new File("./images/r33.png");
         File rotate45Output = new File("./images/r45.png");
@@ -26,8 +26,8 @@ public class Driver {
         for (int i = 0; i < testImage.getHeight(); ++i){
             for (int j = 0; j < testImage.getWidth(); ++j) {
                 GridCoordinate in = new GridCoordinate(i, j);
-                PolarCoordinate pole = RMath.convert((testImage.getHeight() - 1) / 2, in);
-                GridCoordinate out = RMath.convert((testImage.getHeight() - 1) / 2, pole);
+                PolarCoordinate pole = RMath.convert((testImage.getHeight() - 1) / 2, (testImage.getWidth() - 1) / 2, in);
+                GridCoordinate out = RMath.convert((testImage.getHeight() - 1) / 2, (testImage.getWidth() - 1) / 2, pole);
                 if (in.COL != out.COL || in.ROW != out.ROW)
                     throw new ArithmeticException("Out column was " + out.COL + ", expected " + in.COL + ". Out row was " + out.ROW + ", expected " + in.ROW + ".");
             }
