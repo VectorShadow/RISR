@@ -115,6 +115,9 @@ public class RadialImage {
         throw new UnsupportedOperationException(); //todo
     }
 
+    /**
+     * Derive a BufferedImage from this RadialImage.
+     */
     public BufferedImage toBufferedImage() {
         BufferedImage bufferedImage = new BufferedImage(SIZE, SIZE, BufferedImage.TYPE_INT_RGB);
         for (int i = 0; i < bufferedImage.getHeight(); ++i) {
