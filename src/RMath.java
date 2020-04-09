@@ -57,7 +57,7 @@ class RMath {
      * Map an index in 1.0 scale to an index in the provided scale.
      */
     static int map(int source, double scale) {
-        return (int)((double)source * scale);
+        return (int)Math.round((double)source * scale);
     }
     /**
      * Convert a double corresponding to any amount of rotation into a single turn forward rotation.
