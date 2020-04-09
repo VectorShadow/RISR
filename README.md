@@ -29,4 +29,7 @@ public BufferedImage toBufferedImage()
 
 [Unimplemented:]
 
-scale(double scaleFactor)
+Derive a RadialImage by applying a scale factor to an existing RadialImage
+(@param scaleFactor the ratio between the size of the new image and the size of the old image.
+    
+public RadialImage scale(double scaleFactor)
